@@ -42,10 +42,24 @@ LOGGER.info("create db")
 db.create_all()
 
 
+def add_book(form_dict):
+    book = Book(**form_dict)
+    LOGGER.info(f'add book: {book}')
+    db.session.add(book)
+    LOGGER.info("update db")
+    db.session.commit()
+    LOGGER.info("redirect to home")
+
+
+def get_all_books():
+    return db.session.query(Book).all()
+
+
 @app.route('/')
 @log_decorator
 def home():
-    return render_template('index.html')
+    books = get_all_books()
+    return render_template('index.html', books=books)
 
 
 @app.route("/add", methods=["GET", "POST"])
@@ -54,12 +68,7 @@ def add():
     if request.method == "POST":
         form_dict = request.form.to_dict()
         LOGGER.info(f"form dict: {form_dict}")
-        book = Book(**form_dict)
-        LOGGER.info(f'add book: {book}')
-        db.session.add(book)
-        LOGGER.info("update db")
-        db.session.commit()
-        LOGGER.info("redirect to home")
+        add_book(form_dict)
         return redirect(url_for('home'))
     else:
         LOGGER.info('render add')
