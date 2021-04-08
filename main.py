@@ -51,8 +51,15 @@ def add_book(form_dict):
     LOGGER.info("redirect to home")
 
 
+@log_decorator
 def get_all_books():
     return db.session.query(Book).all()
+
+
+@log_decorator
+def update_rating(book, rating):
+    book.rating = rating
+    db.session.commit()
 
 
 @app.route('/')
@@ -73,6 +80,21 @@ def add():
     else:
         LOGGER.info('render add')
         return render_template('add.html')
+
+
+@app.route('/edit/<int:id>', methods=['GET', 'POST'])
+@log_decorator
+def edit_rating(id):
+    book = Book.query.get(id)
+    if request.method == 'GET':
+        return render_template('edit.html', book=book)
+    else:
+        LOGGER.info(f"selected book={book}")
+        rating = request.form["rating"]
+        LOGGER.info(f"new rating: '{rating}'")
+        if rating:
+            update_rating(book, rating)
+        return redirect(url_for('home'))
 
 
 if __name__ == "__main__":
