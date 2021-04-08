@@ -3,7 +3,8 @@ from flask import (
     render_template,
     request,
     redirect,
-    url_for
+    url_for,
+    Request,
 )
 import util.network
 import util.params
@@ -30,14 +31,11 @@ def home():
 @app.route("/add", methods=["GET", "POST"])
 @log_decorator
 def add():
-    logger.info(request.form)
-    logger.info(request.method)
+    form_dict = request.form.to_dict()
+    logger.info(f"add {form_dict}")
     if request.method == "POST":
-        title = request.form['title']
-        author = request.form['author']
-        rating = request.form['rating']
-        logger.info(f"{title}, {author}, {rating}")
-        all_books.append(dict(title=title, author=author, rating=rating))
+        all_books.append(form_dict)
+        logger.info("list all_books")
         for book in all_books:
             logger.info(str(book))
     return render_template('add.html')
