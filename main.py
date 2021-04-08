@@ -97,5 +97,14 @@ def edit_rating(id):
         return redirect(url_for('home'))
 
 
+@app.route('/delete/<int:id>', methods=['GET', 'POST'])
+@log_decorator
+def delete(id):
+    book = Book.query.get(id)
+    db.session.delete(book)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
 if __name__ == "__main__":
     app.run(debug=True, host=util.network.get_ipaddress())
