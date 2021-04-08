@@ -16,17 +16,18 @@ from util.logging import (
 )
 import logging
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 get_root_logger()
 
+LOGGER.info("create app")
 app = Flask(__name__)
 
-# all_books = []
+LOGGER.info("config SQLAlchemy")
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///books.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-
+LOGGER.info("define Book class")
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
@@ -37,6 +38,7 @@ class Book(db.Model):
         return f'<Book {self.title} - {self.author} - {self.rating}>'
 
 
+LOGGER.info("create db")
 db.create_all()
 
 
@@ -50,18 +52,17 @@ def home():
 @log_decorator
 def add():
     if request.method == "POST":
-        # all_books.append(form_dict)
-        # logger.info("list all_books")
-        # for book in all_books:
-        #     logger.info(str(book))
         form_dict = request.form.to_dict()
-        logger.info(f"add {form_dict}")
+        LOGGER.info(f"form dict: {form_dict}")
         book = Book(**form_dict)
-        logger.info(f'add book: {book}')
+        LOGGER.info(f'add book: {book}')
         db.session.add(book)
+        LOGGER.info("update db")
         db.session.commit()
+        LOGGER.info("redirect to home")
         return redirect(url_for('home'))
     else:
+        LOGGER.info('render add')
         return render_template('add.html')
 
 
