@@ -38,8 +38,9 @@ def add():
         logger.info("list all_books")
         for book in all_books:
             logger.info(str(book))
-    return render_template('add.html')
-
+        return render_template('index.html', books=all_books)
+    else:
+        return render_template('add.html')
 
 if __name__ == "__main__":
     app.run(debug=True, host=util.network.get_ipaddress())
