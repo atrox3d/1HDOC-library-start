@@ -7,7 +7,6 @@ from flask import (
     Request,
 )
 from flask_sqlalchemy import SQLAlchemy
-
 import util.network
 import util.params
 from util.logging import (
@@ -16,6 +15,7 @@ from util.logging import (
 )
 import logging
 
+########################################################################################################################
 LOGGER = logging.getLogger(__name__)
 get_root_logger()
 
@@ -28,7 +28,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 LOGGER.info("define Book class")
+
+
 class Book(db.Model):
+    """
+    defines Book objects
+    """
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(250), unique=True, nullable=False)
     author = db.Column(db.String(250), nullable=False)
@@ -43,6 +48,9 @@ db.create_all()
 
 
 def add_book(form_dict):
+    """
+    add book to db
+    """
     book = Book(**form_dict)
     LOGGER.info(f'add book: {book}')
     db.session.add(book)
@@ -53,11 +61,17 @@ def add_book(form_dict):
 
 @log_decorator
 def get_all_books():
+    """
+    select * from books
+    """
     return db.session.query(Book).all()
 
 
 @log_decorator
 def update_rating(book, rating):
+    """
+    update book rating on db
+    """
     book.rating = rating
     db.session.commit()
 
@@ -72,23 +86,42 @@ def home():
 @app.route("/add", methods=["GET", "POST"])
 @log_decorator
 def add():
-    if request.method == "POST":
+    if request.method == "GET":
+        #
+        # GET: rendere add.html
+        #
+        LOGGER.info('render add')
+        return render_template('add.html')
+    else:
+        #
+        # POST: we arrive from a form
+        # add book to db and redirect to home
+        #
         form_dict = request.form.to_dict()
         LOGGER.info(f"form dict: {form_dict}")
         add_book(form_dict)
         return redirect(url_for('home'))
-    else:
-        LOGGER.info('render add')
-        return render_template('add.html')
 
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @log_decorator
 def edit_rating(id):
+    #
+    #   get book object from db
+    #
     book = Book.query.get(id)
+
     if request.method == 'GET':
+        #
+        # GET: rendere add.html
+        #
         return render_template('edit.html', book=book)
     else:
+        #
+        # POST: we arrive from a form
+        # update book rating
+        # redirect to home
+        #
         LOGGER.info(f"selected book={book}")
         rating = request.form["rating"]
         LOGGER.info(f"new rating: '{rating}'")
@@ -100,6 +133,11 @@ def edit_rating(id):
 @app.route('/delete/<int:id>', methods=['GET', 'POST'])
 @log_decorator
 def delete(id):
+    #
+    # get book
+    # delete book from db
+    # redirect to home
+    #
     book = Book.query.get(id)
     db.session.delete(book)
     db.session.commit()
